@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_500">#6200EE</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <color name="login_bg">#FDFBF7</color>
+    <color name="dashboard_bg">#E8F5E9</color>
+    <color name="orders_bg">#FBE9E7</color>
+    <color name="order_details_bg">#FFEBEE</color>
+    <color name="earnings_bg">#E8EAF6</color>
+
+    <color name="button_blue">#1976D2</color>
+    <color name="text_gray">#757575</color>
+    <color name="chip_blue">#E3F2FD</color>
+</resources>
