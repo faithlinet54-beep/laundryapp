@@ -1,4 +1,4 @@
-Week 1 to Week 3 Laundry App Submission
+
 Login Screen
 Allows users to securely sign in to the application.
 ![Login Screen](Login screen.png)
