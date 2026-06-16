@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">LaundryApp</string>
+    <string-array name="order_status_array">
+        <item>Washing</item>
+        <item>Ready</item>
+        <item>Completed</item>
+    </string-array>
 </resources>

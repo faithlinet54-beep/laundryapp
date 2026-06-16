@@ -5,65 +5,103 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class LoginFragment extends Fragment {
 
-    private EditText emailField;
-    private EditText passwordField;
-    private Button signInButton;
+    private TextInputLayout tilEmail;
+    private TextInputLayout tilPassword;
+    private TextInputEditText etEmail;
+    private TextInputEditText etPassword;
+    private ImageView ivLogo;
+    private TextView tvForgotPassword;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.screen_login, container, false);
 
-        // Link the XML components to Java variables
-        emailField = view.findViewById(R.id.email_input);
-        passwordField = view.findViewById(R.id.password_input);
-        signInButton = view.findViewById(R.id.btn_sign_in);
+        tilEmail = view.findViewById(R.id.tilEmail);
+        tilPassword = view.findViewById(R.id.tilPassword);
+        etEmail = view.findViewById(R.id.etEmail);
+        etPassword = view.findViewById(R.id.etPassword);
+        ivLogo = view.findViewById(R.id.ivLogo);
+        tvForgotPassword = view.findViewById(R.id.tvForgotPassword);
+        MaterialButton btnSignIn = view.findViewById(R.id.btnSignIn);
 
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = emailField.getText().toString().trim();
-                String password = passwordField.getText().toString().trim();
+        // Load attractive logo from internet
+        String logoUrl = "https://cdn-icons-png.flaticon.com/512/3003/3003984.png";
+        Glide.with(this)
+                .load(logoUrl)
+                .placeholder(android.R.drawable.ic_menu_slideshow)
+                .into(ivLogo);
 
-                // Validation: Check if inputs accept standard random email/password requirements
-                if (email.isEmpty()) {
-                    emailField.setError("Email cannot be empty");
-                } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    emailField.setError("Please enter a valid email address");
-                } else if (password.isEmpty()) {
-                    passwordField.setError("Password cannot be empty");
-                } else if (password.length() < 4) {
-                    passwordField.setError("Password must be at least 4 characters");
-                } else {
-                    // Success feedback message
-                    Toast.makeText(getActivity(), "Login Successful!", Toast.LENGTH_SHORT).show();
+        btnSignIn.setOnClickListener(v -> {
+            String email = etEmail.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
 
-                    // Navigate smoothly to the DashboardFragment
-                    if (getActivity() != null) {
-                        getActivity().getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment_container, new DashboardFragment())
-                                .commit();
+            tilEmail.setError(null);
+            tilPassword.setError(null);
 
-                        // Sync the bottom navigation selection indicator to the Dashboard tab
-                        BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottom_navigation);
-                        if (bottomNav != null) {
-                            bottomNav.setSelectedItemId(R.id.nav_dashboard);
-                        }
-                    }
+            if (email.isEmpty()) {
+                tilEmail.setError("Email cannot be empty");
+            } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                tilEmail.setError("Please enter a valid email address");
+            } else if (password.isEmpty()) {
+                tilPassword.setError("Password cannot be empty");
+            } else if (password.length() < 4) {
+                tilPassword.setError("Password must be at least 4 characters");
+            } else {
+                Toast.makeText(getActivity(), "Login Successful!", Toast.LENGTH_SHORT).show();
+
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).revealMainApplicationFlow();
                 }
             }
         });
 
+        tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
+
         return view;
+    }
+
+    private void showForgotPasswordDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Reset Password");
+        builder.setMessage("Enter your email address to receive a verification link.");
+
+        final EditText input = new EditText(getActivity());
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        input.setHint("Email Address");
+        builder.setView(input);
+
+        builder.setPositiveButton("Send Link", (dialog, which) -> {
+            String email = input.getText().toString().trim();
+            if (!email.isEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(getActivity(), "Verification link sent to " + email, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getActivity(), "Please enter a valid email", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
     }
 }
