@@ -50,8 +50,8 @@ public class EarningsFragment extends Fragment {
         double total = 0;
         List<TransactionData> transactions = new ArrayList<>();
         for (Order o : orders) {
-            total += o.getAmountCharged();
-            transactions.add(new TransactionData("Order #" + o.getId(), o.getCustomerName(), "Completed", "Ksh." + o.getAmountCharged()));
+            total += o.getTotalAmount();
+            transactions.add(new TransactionData("Order #" + o.getId(), o.getCustomerName(), "Completed", "Ksh." + (int)o.getTotalAmount()));
         }
 
         tvTotalEarningsValue.setText("Ksh. " + (int)total);

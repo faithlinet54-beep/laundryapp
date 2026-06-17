@@ -33,7 +33,7 @@ public class OrdersDetailsFragment extends Fragment {
 
                     BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottom_navigation);
                     if (bottomNav != null) {
-                        bottomNav.setSelectedItemId(R.id.nav_earnings);
+                        bottomNav.setSelectedItemId(R.id.nav_reports);
                     }
                 }
             });

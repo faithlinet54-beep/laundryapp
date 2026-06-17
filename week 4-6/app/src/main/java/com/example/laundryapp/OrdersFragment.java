@@ -49,21 +49,17 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
         ivActiveIcon = view.findViewById(R.id.ivActiveIcon);
         ivReadyIcon = view.findViewById(R.id.ivReadyIcon);
 
-        // Load Metric Icons from internet (Figma-style)
-        Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/3502/3502688.png").into(ivTotalIcon); // Ledger
-        Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/109/109613.png").into(ivActiveIcon); // Clock
-        Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/190/190411.png").into(ivReadyIcon); // Check
+        Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/3502/3502688.png").into(ivTotalIcon); 
+        Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/109/109613.png").into(ivActiveIcon); 
+        Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/190/190411.png").into(ivReadyIcon); 
 
         rvOrders.setLayoutManager(new LinearLayoutManager(getContext()));
-        allOrders = dbHelper.getAllOrders();
-        adapter = new OrderAdapter(allOrders, this);
-        rvOrders.setAdapter(adapter);
-
-        updateMetrics();
+        refreshData();
 
         FloatingActionButton fabAddOrder = view.findViewById(R.id.fabAddOrder);
         fabAddOrder.setOnClickListener(v -> showOrderDialog(null));
 
+        // 7. Search Functionality
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -82,6 +78,7 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
         if (query.isEmpty()) {
             allOrders = dbHelper.getAllOrders();
         } else {
+            // Search by Customer Name or Phone Number (Implemented in DatabaseHelper)
             allOrders = dbHelper.searchOrders(query);
         }
         adapter.setOrders(allOrders);
@@ -94,13 +91,14 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
         int active = 0;
         int ready = 0;
         for (Order o : orders) {
-            if ("washing".equalsIgnoreCase(o.getOrderStatus())) active++;
-            if ("ready".equalsIgnoreCase(o.getOrderStatus())) ready++;
+            if ("Washing".equalsIgnoreCase(o.getOrderStatus())) active++;
+            if ("Ready for Pickup".equalsIgnoreCase(o.getOrderStatus())) ready++;
         }
         tvActiveCount.setText(String.valueOf(active));
         tvReadyCount.setText(String.valueOf(ready));
     }
 
+    // 2. Save Orders & 4. Update Orders
     private void showOrderDialog(@Nullable Order order) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_order, null);
@@ -108,46 +106,56 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
 
         TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
         TextInputEditText etName = dialogView.findViewById(R.id.etCustomerName);
+        TextInputEditText etPhone = dialogView.findViewById(R.id.etPhoneNumber);
         TextInputEditText etService = dialogView.findViewById(R.id.etServiceType);
+        TextInputEditText etQty = dialogView.findViewById(R.id.etQuantity);
         TextInputEditText etAmount = dialogView.findViewById(R.id.etAmount);
         Spinner spinnerStatus = dialogView.findViewById(R.id.spinnerStatus);
 
         if (order != null) {
             tvTitle.setText("Update Order");
             etName.setText(order.getCustomerName());
+            etPhone.setText(order.getPhoneNumber());
             etService.setText(order.getServiceType());
-            etAmount.setText(String.valueOf(order.getAmountCharged()));
+            etQty.setText(String.valueOf(order.getQuantity()));
+            etAmount.setText(String.valueOf(order.getTotalAmount()));
             
             ArrayAdapter<CharSequence> adapter = (ArrayAdapter<CharSequence>) spinnerStatus.getAdapter();
             int pos = adapter.getPosition(order.getOrderStatus());
-            spinnerStatus.setSelection(pos);
-
-            builder.setNeutralButton("Delete", (dialog, which) -> {
-                dbHelper.deleteOrder(order.getId());
-                refreshData();
-                Toast.makeText(getContext(), "Order Deleted", Toast.LENGTH_SHORT).show();
-            });
+            if (pos >= 0) spinnerStatus.setSelection(pos);
         }
 
-        builder.setPositiveButton(order == null ? "Add" : "Update", (dialog, which) -> {
+        builder.setPositiveButton(order == null ? "Save" : "Update", (dialog, which) -> {
             String name = etName.getText().toString().trim();
+            String phone = etPhone.getText().toString().trim();
             String service = etService.getText().toString().trim();
+            String qtyStr = etQty.getText().toString().trim();
             String amountStr = etAmount.getText().toString().trim();
             String status = spinnerStatus.getSelectedItem().toString();
 
-            if (name.isEmpty() || service.isEmpty() || amountStr.isEmpty()) {
+            if (name.isEmpty() || phone.isEmpty() || service.isEmpty() || qtyStr.isEmpty() || amountStr.isEmpty()) {
                 Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            int qty = Integer.parseInt(qtyStr);
             double amount = Double.parseDouble(amountStr);
 
             if (order == null) {
-                dbHelper.addOrder(name, service, amount, status);
-                Toast.makeText(getContext(), "Order Added", Toast.LENGTH_SHORT).show();
+                // CREATE: Add order to SQLite
+                Order newOrder = new Order(0, name, phone, service, qty, amount, status);
+                dbHelper.addOrder(newOrder);
+                Toast.makeText(getContext(), "Order Saved Successfully", Toast.LENGTH_SHORT).show();
             } else {
-                dbHelper.updateOrder(order.getId(), name, service, amount, status);
-                Toast.makeText(getContext(), "Order Updated", Toast.LENGTH_SHORT).show();
+                // UPDATE: Update order in SQLite
+                order.setCustomerName(name);
+                order.setPhoneNumber(phone);
+                order.setServiceType(service);
+                order.setQuantity(qty);
+                order.setTotalAmount(amount);
+                order.setOrderStatus(status);
+                dbHelper.updateOrder(order);
+                Toast.makeText(getContext(), "Order Updated Successfully", Toast.LENGTH_SHORT).show();
             }
             refreshData();
         });
@@ -158,17 +166,34 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
 
     private void refreshData() {
         allOrders = dbHelper.getAllOrders();
-        adapter.setOrders(allOrders);
+        if (adapter == null) {
+            adapter = new OrderAdapter(allOrders, this);
+            rvOrders.setAdapter(adapter);
+        } else {
+            adapter.setOrders(allOrders);
+        }
         updateMetrics();
     }
 
     @Override
     public void onOrderClick(Order order) {
-        if (getActivity() != null) {
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new OrdersDetailsFragment())
-                    .addToBackStack(null)
-                    .commit();
-        }
+        // Show update dialog on click
+        showOrderDialog(order);
+    }
+
+    // 5. Delete Orders
+    @Override
+    public void onDeleteClick(Order order) {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Confirm Deletion")
+                .setMessage("Are you sure you want to delete this order for " + order.getCustomerName() + "?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    // DELETE: Remove from SQLite
+                    dbHelper.deleteOrder(order.getId());
+                    refreshData();
+                    Toast.makeText(getContext(), "Order Deleted", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

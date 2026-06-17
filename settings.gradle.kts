@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "LaundryApp"
 include(":app")
- 
+project(":app").projectDir = file("week 4-6/app")

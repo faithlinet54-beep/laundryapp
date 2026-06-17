@@ -4,7 +4,7 @@
     xmlns:tools="http://tools.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0FDF4"
+    android:background="#FFFFFF"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -48,15 +48,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
 
+        <!-- Today's Earnings Card: Bright Purple theme -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardEarnings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="#E5E7EB"
+            app:cardBackgroundColor="#F5F3FF"
             app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#DDD6FE"
             app:layout_constraintTop_toBottomOf="@id/tvDate">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -80,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Sh.420"
-                    android:textColor="#111827"
+                    android:textColor="#7C3AED"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -107,15 +109,17 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Active Orders Card: Bright Blue theme -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardOrders"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="#E5E7EB"
+            app:cardBackgroundColor="#EFF6FF"
             app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#DBEAFE"
             app:layout_constraintTop_toBottomOf="@id/cardEarnings">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -139,7 +143,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="14"
-                    android:textColor="#111827"
+                    android:textColor="#2563EB"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -204,7 +208,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:background="#E5E7EB"
+            android:background="#FFFFFF"
             android:orientation="vertical"
             app:layout_constraintTop_toBottomOf="@id/tvLiveOrdersTitle">
 
@@ -213,7 +217,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingVertical="12dp"
-                android:paddingHorizontal="16dp">
+                android:paddingHorizontal="16dp"
+                android:background="#F9FAFB">
 
                 <TextView
                     android:layout_width="0dp"

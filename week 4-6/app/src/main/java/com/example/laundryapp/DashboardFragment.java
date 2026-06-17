@@ -1,5 +1,7 @@
 package com.example.laundryapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -14,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import java.util.ArrayList;
 import java.util.List;
 
 import android.widget.ImageView;
@@ -23,41 +24,45 @@ import com.bumptech.glide.Glide;
 public class DashboardFragment extends Fragment {
 
     private LinearLayout containerOrderRows;
+    private DatabaseHelper dbHelper;
+    private TextView tvWelcome, tvEarningsValue, tvOrdersValue, tvSubtitle;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.screen_dashboard, container, false);
 
+        dbHelper = new DatabaseHelper(getContext());
         containerOrderRows = view.findViewById(R.id.containerOrderRows);
         TextView tvViewAll = view.findViewById(R.id.tvViewAll);
-        TextView tvWelcome = view.findViewById(R.id.tvWelcome);
-        TextView tvEarningsValue = view.findViewById(R.id.tvEarningsValue);
-        TextView tvOrdersValue = view.findViewById(R.id.tvOrdersValue);
+        tvWelcome = view.findViewById(R.id.tvWelcome);
+        tvEarningsValue = view.findViewById(R.id.tvEarningsValue);
+        tvOrdersValue = view.findViewById(R.id.tvOrdersValue);
+        tvSubtitle = view.findViewById(R.id.tvSubtitle);
         
         ImageView ivEarningsIcon = view.findViewById(R.id.ivEarningsIcon);
         ImageView ivOrdersIcon = view.findViewById(R.id.ivOrdersIcon);
         ImageView ivLiveIndicator = view.findViewById(R.id.ivLiveIndicator);
 
-        // Load Icons from internet (Figma-style)
         Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/2488/2488749.png").into(ivEarningsIcon);
         Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/679/679821.png").into(ivOrdersIcon);
         Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/595/595067.png").into(ivLiveIndicator);
 
-        DatabaseHelper dbHelper = new DatabaseHelper(getContext());
-        List<Order> orders = dbHelper.getAllOrders();
-        
-        tvOrdersValue.setText(String.valueOf(orders.size()));
-        double total = 0;
-        for (Order o : orders) total += o.getAmountCharged();
-        tvEarningsValue.setText("Sh." + (int)total);
+        // 9. SharedPreferences - Retrieve logged-in username
+        SharedPreferences prefs = getActivity().getSharedPreferences("LaundryPrefs", Context.MODE_PRIVATE);
+        String username = prefs.getString("username", "Owner");
 
-        // Styling the welcome text: "Welcome back, Owner!"
-        String welcomeText = "Welcome back, Owner!";
+        // Styling the welcome text
+        String welcomeText = "Welcome back, " + username + "!";
         SpannableString spannableString = new SpannableString(welcomeText);
-        // "Owner!" starts at index 14 and ends at 20
-        spannableString.setSpan(new ForegroundColorSpan(0xFF7C3AED), 14, 20, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        int start = welcomeText.indexOf(username);
+        int end = start + username.length();
+        if (start >= 0) {
+            spannableString.setSpan(new ForegroundColorSpan(0xFF7C3AED), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
         tvWelcome.setText(spannableString);
+
+        updateDashboardStats();
 
         tvViewAll.setOnClickListener(v -> {
             if (getActivity() != null) {
@@ -73,14 +78,32 @@ public class DashboardFragment extends Fragment {
         return view;
     }
 
+    // 6. Dashboard Integration - Retrieve dynamic values from SQLite
+    private void updateDashboardStats() {
+        List<Order> orders = dbHelper.getAllOrders();
+        
+        double totalRevenue = 0;
+        int activeOrders = 0;
+        for (Order o : orders) {
+            totalRevenue += o.getTotalAmount();
+            // Active orders are anything not 'Completed'
+            if (!"Completed".equalsIgnoreCase(o.getOrderStatus())) {
+                activeOrders++;
+            }
+        }
+        
+        tvOrdersValue.setText(String.valueOf(activeOrders));
+        tvEarningsValue.setText("Sh." + (int)totalRevenue);
+        
+        tvSubtitle.setText("You have " + orders.size() + " total orders in the system");
+    }
+
     private void populateOrderTable() {
-        DatabaseHelper dbHelper = new DatabaseHelper(getContext());
         List<Order> orders = dbHelper.getAllOrders();
 
         if (containerOrderRows != null) {
             containerOrderRows.removeAllViews();
             
-            // Limit to top 5 recent orders for dashboard
             int count = Math.min(orders.size(), 5);
             for (int i = 0; i < count; i++) {
                 Order order = orders.get(i);
@@ -112,10 +135,17 @@ public class DashboardFragment extends Fragment {
                 tvStatus.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                 tvStatus.setText(order.getOrderStatus());
                 
-                int statusColor = 0xFF2563EB; // Washing
-                if ("ready".equalsIgnoreCase(order.getOrderStatus())) {
-                    statusColor = 0xFF7C3AED; // Ready
+                int statusColor;
+                if ("Ready for Pickup".equalsIgnoreCase(order.getOrderStatus())) {
+                    statusColor = 0xFF7C3AED;
+                } else if ("Completed".equalsIgnoreCase(order.getOrderStatus())) {
+                    statusColor = 0xFF16A34A;
+                } else if ("Washing".equalsIgnoreCase(order.getOrderStatus())) {
+                    statusColor = 0xFF2563EB;
+                } else {
+                    statusColor = 0xFFEA580C;
                 }
+
                 tvStatus.setTextColor(statusColor);
                 tvStatus.setGravity(Gravity.END);
                 tvStatus.setTextSize(13f);

@@ -59,30 +59,25 @@ public class CustomersFragment extends Fragment {
         RetrofitClient.getApiService().getUsers().enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                // Add a artificial delay of 4 seconds so you have plenty of time to take a screenshot
-                new android.os.Handler().postDelayed(() -> {
-                    if (!isAdded()) return; // Safety check
+                if (!isAdded()) return; // Safety check
 
-                    // Hide the loading spinner after the delay
-                    swipeRefresh.setRefreshing(false);
+                // Hide the loading spinner immediately after response
+                swipeRefresh.setRefreshing(false);
 
-                    if (response.isSuccessful() && response.body() != null) {
-                        adapter = new UserAdapter(response.body());
-                        rvCustomers.setAdapter(adapter);
-                        Toast.makeText(getContext(), "Customers Updated!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Failed to fetch data", Toast.LENGTH_SHORT).show();
-                    }
-                }, 4000); // 4000 milliseconds = 4 seconds
+                if (response.isSuccessful() && response.body() != null) {
+                    adapter = new UserAdapter(response.body());
+                    rvCustomers.setAdapter(adapter);
+                    Toast.makeText(getContext(), "Customers Updated!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Failed to fetch data", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
-                new android.os.Handler().postDelayed(() -> {
-                    if (!isAdded()) return;
-                    swipeRefresh.setRefreshing(false);
-                    Toast.makeText(getContext(), "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }, 4000);
+                if (!isAdded()) return;
+                swipeRefresh.setRefreshing(false);
+                Toast.makeText(getContext(), "Network Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

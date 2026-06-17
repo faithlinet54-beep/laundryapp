@@ -1,5 +1,7 @@
 package com.example.laundryapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,13 +19,19 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // Hide navigation bar initially for the login flow
-        bottomNavigationView.setVisibility(View.GONE);
+        // 9. SharedPreferences - Check login status
+        SharedPreferences prefs = getSharedPreferences("LaundryPrefs", Context.MODE_PRIVATE);
+        boolean isLoggedIn = prefs.getBoolean("isLoggedIn", false);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new LoginFragment())
-                    .commit();
+        if (isLoggedIn) {
+            revealMainApplicationFlow();
+        } else {
+            bottomNavigationView.setVisibility(View.GONE);
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new LoginFragment())
+                        .commit();
+            }
         }
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -34,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new DashboardFragment();
             } else if (itemId == R.id.nav_orders) {
                 selectedFragment = new OrdersFragment();
-            } else if (itemId == R.id.nav_earnings) {
-                selectedFragment = new EarningsFragment();
+            } else if (itemId == R.id.nav_reports) { // Changed from earnings
+                selectedFragment = new ReportsFragment();
             } else if (itemId == R.id.nav_customers) {
                 selectedFragment = new CustomersFragment();
             }

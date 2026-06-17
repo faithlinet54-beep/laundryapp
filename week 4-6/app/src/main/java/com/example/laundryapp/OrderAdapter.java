@@ -3,6 +3,7 @@ package com.example.laundryapp;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     public interface OnOrderClickListener {
         void onOrderClick(Order order);
+        void onDeleteClick(Order order);
     }
 
     public OrderAdapter(List<Order> orders, OnOrderClickListener listener) {
@@ -41,29 +43,37 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         Order order = orders.get(position);
         holder.tvOrderId.setText("#" + order.getId());
         holder.tvCustomerName.setText(order.getCustomerName());
+        holder.tvServiceType.setText(order.getServiceType());
+        holder.tvQuantity.setText("Qty: " + order.getQuantity());
+        holder.tvAmount.setText("Sh. " + (int)order.getTotalAmount());
         holder.tvStatusDescription.setText(order.getOrderStatus());
         
-        // Show context info (e.g. time left or pickup time)
-        holder.tvTimeContext.setText("Processing..."); // Placeholder
-
-        // Load specific Figma-style icons based on status
+        // Load specific icons based on status
         String iconUrl;
-        if ("ready".equalsIgnoreCase(order.getOrderStatus())) {
-            iconUrl = "https://cdn-icons-png.flaticon.com/512/190/190411.png"; // Green check/bag
-            holder.tvStatusDescription.setTextColor(0xFF16A34A);
-        } else if ("completed".equalsIgnoreCase(order.getOrderStatus())) {
-            iconUrl = "https://cdn-icons-png.flaticon.com/512/1008/1008010.png"; // Grey check
-            holder.tvStatusDescription.setTextColor(0xFF9CA3AF);
+        int statusColor;
+        
+        if ("Ready for Pickup".equalsIgnoreCase(order.getOrderStatus())) {
+            iconUrl = "https://cdn-icons-png.flaticon.com/512/190/190411.png"; 
+            statusColor = 0xFF7C3AED; // Purple
+        } else if ("Completed".equalsIgnoreCase(order.getOrderStatus())) {
+            iconUrl = "https://cdn-icons-png.flaticon.com/512/1008/1008010.png";
+            statusColor = 0xFF16A34A; // Green
+        } else if ("Washing".equalsIgnoreCase(order.getOrderStatus())) {
+            iconUrl = "https://cdn-icons-png.flaticon.com/512/3003/3003984.png";
+            statusColor = 0xFF2563EB; // Blue
         } else {
-            iconUrl = "https://cdn-icons-png.flaticon.com/512/3003/3003984.png"; // Orange machine
-            holder.tvStatusDescription.setTextColor(0xFFEA580C);
+            iconUrl = "https://cdn-icons-png.flaticon.com/512/109/109613.png";
+            statusColor = 0xFFEA580C; // Orange
         }
+
+        holder.tvStatusDescription.setTextColor(statusColor);
 
         Glide.with(holder.itemView.getContext())
                 .load(iconUrl)
                 .into(holder.ivStatusIcon);
 
         holder.itemView.setOnClickListener(v -> listener.onOrderClick(order));
+        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(order));
     }
 
     @Override
@@ -72,16 +82,20 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
-        TextView tvOrderId, tvCustomerName, tvStatusDescription, tvTimeContext;
+        TextView tvOrderId, tvCustomerName, tvServiceType, tvQuantity, tvAmount, tvStatusDescription;
         ImageView ivStatusIcon;
+        ImageButton btnDelete;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvOrderId = itemView.findViewById(R.id.tvOrderId);
             tvCustomerName = itemView.findViewById(R.id.tvCustomerName);
+            tvServiceType = itemView.findViewById(R.id.tvServiceType);
+            tvQuantity = itemView.findViewById(R.id.tvQuantity);
+            tvAmount = itemView.findViewById(R.id.tvAmount);
             tvStatusDescription = itemView.findViewById(R.id.tvStatusDescription);
-            tvTimeContext = itemView.findViewById(R.id.tvTimeContext);
             ivStatusIcon = itemView.findViewById(R.id.ivStatusIcon);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }

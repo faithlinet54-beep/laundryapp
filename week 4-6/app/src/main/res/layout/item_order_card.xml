@@ -21,8 +21,7 @@
             android:layout_height="32dp"
             android:contentDescription="Status"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/llOrderInfo" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
             android:id="@+id/llOrderInfo"
@@ -30,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:orientation="vertical"
-            app:layout_constraintEnd_toStartOf="@id/ivChevron"
+            app:layout_constraintEnd_toStartOf="@id/tvAmount"
             app:layout_constraintStart_toEndOf="@id/ivStatusIcon"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -53,38 +52,56 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/tvServiceType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Full Wash"
+                android:textColor="#4B5563"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Qty: 5"
+                android:textColor="#4B5563"
+                android:textSize="14sp" />
+
+            <TextView
                 android:id="@+id/tvStatusDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="washing"
+                android:layout_marginTop="4dp"
+                android:text="Washing"
                 android:textColor="#EA580C"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvTimeContext"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:drawablePadding="4dp"
-                android:gravity="center_vertical"
-                android:text="12 min left"
-                android:textColor="#4B5563"
-                android:textSize="12sp"
-                app:drawableStartCompat="@android:drawable/ic_menu_recent_history"
-                app:drawableTint="#4B5563" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/ivChevron"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:src="@android:drawable/ic_media_play"
+        <TextView
+            android:id="@+id/tvAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sh. 500"
+            android:textColor="#7C3AED"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnDelete"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="16dp"/>
+
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="#9CA3AF"
-            android:contentDescription="Details" />
+            app:tint="#EF4444"
+            android:contentDescription="Delete Order" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
