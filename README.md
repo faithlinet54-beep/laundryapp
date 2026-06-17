@@ -1,0 +1,1 @@
+Week 4-6 progress was originally completed and committed yesterday. Recent commits on June 17th were strictly for folder structure re-organization to ensure the week 7 subdirectory displayed correctly
