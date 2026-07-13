@@ -1,0 +1,35 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="4"
+        android:translateY="4">
+        <!-- Machine Body -->
+        <path
+            android:fillColor="#F3F4F6"
+            android:pathData="M25,20h50c3,0 5,2 5,5v50c0,3 -2,5 -5,5h-50c-3,0 -5,-2 -5,-5v-50C20,22 22,20 25,20z" />
+        <!-- Control Panel -->
+        <path
+            android:fillColor="#E5E7EB"
+            android:pathData="M20,20h60v15h-60z" />
+        <!-- Knob -->
+        <path
+            android:fillColor="#7C3AED"
+            android:pathData="M30,27m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0" />
+        <!-- Door Outer -->
+        <path
+            android:fillColor="#D1D5DB"
+            android:pathData="M50,55m-18,0a18,18 0,1 1,36 0a18,18 0,1 1,-36 0" />
+        <!-- Door Glass -->
+        <path
+            android:fillColor="#7C3AED"
+            android:pathData="M50,55m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0" />
+        <!-- Reflection -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:alpha="0.3"
+            android:pathData="M42,48a10,10 0 0 1 8,-3v2a8,8 0 0 0 -6,1z" />
+    </group>
+</vector>

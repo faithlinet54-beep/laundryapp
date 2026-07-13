@@ -17,6 +17,20 @@
     <string name="order_quantity_format">Qty: %1$d</string>
     <string name="order_amount_format">Sh.%1$.2f</string>
     <string name="update_order">Update Order</string>
+    <string name="title_device_features">Device Features</string>
+    <string name="menu_device">Device</string>
+    <string name="title_order_mgmt">Order Management</string>
+    <string name="subtitle_order_mgmt">Track and manage customer requests</string>
+    <string name="label_washing">Washing</string>
+    <string name="label_ready">Ready</string>
+    <string name="label_total">Total</string>
+    <string name="btn_add_order">Add Order</string>
+    <string name="btn_view_orders">View Orders</string>
+    <string name="dashboard_subtitle">Here\'s what\'s happening today</string>
+    <string name="dialog_order_details">Laundry Order Details</string>
+    <string name="label_service_type">Service Type</string>
+    <string name="label_total_amount_sh">Total Amount (Sh)</string>
+    <string name="desc_add_order">Add New Order</string>
     <string-array name="order_status_array">
         <item>Pending</item>
         <item>Washing</item>

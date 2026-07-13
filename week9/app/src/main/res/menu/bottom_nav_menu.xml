@@ -16,4 +16,8 @@
         android:id="@+id/nav_customers"
         android:icon="@android:drawable/ic_menu_myplaces"
         android:title="Customers" />
+    <item
+        android:id="@+id/nav_device"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:title="@string/menu_device" />
 </menu>

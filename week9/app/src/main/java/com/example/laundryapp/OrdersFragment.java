@@ -2,22 +2,27 @@ package com.example.laundryapp;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,16 +44,6 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
         tvTotalCount = view.findViewById(R.id.tvTotalCount);
         tvActiveCount = view.findViewById(R.id.tvActiveCount);
         tvReadyCount = view.findViewById(R.id.tvReadyCount);
-        
-        ImageView ivTotalIcon = view.findViewById(R.id.ivTotalIcon);
-        ImageView ivActiveIcon = view.findViewById(R.id.ivActiveIcon);
-        ImageView ivReadyIcon = view.findViewById(R.id.ivReadyIcon);
-
-        if (getContext() != null) {
-            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/3502/3502688.png").into(ivTotalIcon);
-            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/3003/3003984.png").into(ivActiveIcon);
-            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/190/190411.png").into(ivReadyIcon);
-        }
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         orders = new ArrayList<>();
@@ -56,7 +51,7 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
 
         FloatingActionButton fabAddOrder = view.findViewById(R.id.fabAddOrder);
         if (fabAddOrder != null) {
-            fabAddOrder.setOnClickListener(v -> showAddOrderDialog());
+            fabAddOrder.setOnClickListener(v -> showOrderDialog(null));
         }
 
         return view;
@@ -71,52 +66,79 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
 
     private void updateStats() {
         if (orders == null) return;
-        
         int total = orders.size();
-        int active = 0;
-        int ready = 0;
-
+        int activeCount = 0;
+        int readyCount = 0;
         for (Order o : orders) {
-            if ("Washing".equalsIgnoreCase(o.getOrderStatus())) active++;
-            if ("Ready for Pickup".equalsIgnoreCase(o.getOrderStatus())) ready++;
+            if ("Washing".equalsIgnoreCase(o.getOrderStatus())) {
+                activeCount++;
+            }
+            if ("Ready for Pickup".equalsIgnoreCase(o.getOrderStatus())) {
+                readyCount++;
+            }
         }
-
         tvTotalCount.setText(String.valueOf(total));
-        tvActiveCount.setText(String.valueOf(active));
-        tvReadyCount.setText(String.valueOf(ready));
+        tvActiveCount.setText(String.valueOf(activeCount));
+        tvReadyCount.setText(String.valueOf(readyCount));
     }
 
     @Override
     public void onOrderClick(Order order) {
-        showUpdateOrderDialog(order);
+        showOrderDialog(order);
     }
 
     @Override
     public void onDeleteClick(Order order) {
         if (getContext() == null) return;
         new AlertDialog.Builder(getContext())
-                .setTitle("Delete Order")
-                .setMessage("Are you sure you want to delete this order?")
-                .setPositiveButton("Yes", (dialog, which) -> {
+                .setTitle("Confirm Deletion")
+                .setMessage("Are you sure you want to delete the order for " + order.getCustomerName() + "?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("Yes, Delete", (dialog, which) -> {
                     dbHelper.deleteOrder(order.getId());
                     loadOrders();
+                    Toast.makeText(getContext(), "Order deleted successfully", Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("No", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void showAddOrderDialog() {
+    private void showOrderDialog(@Nullable final Order existingOrder) {
         if (getContext() == null) return;
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_order, null);
-        EditText etName = dialogView.findViewById(R.id.etCustomerName);
-        EditText etPhone = dialogView.findViewById(R.id.etPhoneNumber);
-        EditText etService = dialogView.findViewById(R.id.etServiceType);
-        EditText etQty = dialogView.findViewById(R.id.etQuantity);
-        EditText etAmount = dialogView.findViewById(R.id.etAmount);
-        Spinner spinnerStatus = dialogView.findViewById(R.id.spinnerStatus);
-        Button btnSave = dialogView.findViewById(R.id.btnSaveOrder);
+        
+        final TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        final TextInputLayout tilName = dialogView.findViewById(R.id.tilCustomerName);
+        final TextInputLayout tilPhone = dialogView.findViewById(R.id.tilPhoneNumber);
+        final TextInputLayout tilService = dialogView.findViewById(R.id.tilServiceType);
+        final TextInputLayout tilQty = dialogView.findViewById(R.id.tilQuantity);
+        final TextInputLayout tilAmount = dialogView.findViewById(R.id.tilAmount);
+        
+        final EditText etName = dialogView.findViewById(R.id.etCustomerName);
+        final EditText etPhone = dialogView.findViewById(R.id.etPhoneNumber);
+        final EditText etService = dialogView.findViewById(R.id.etServiceType);
+        final EditText etQty = dialogView.findViewById(R.id.etQuantity);
+        final EditText etAmount = dialogView.findViewById(R.id.etAmount);
+        final Spinner spinnerStatus = dialogView.findViewById(R.id.spinnerStatus);
+        final Button btnSave = dialogView.findViewById(R.id.btnSaveOrder);
 
-        AlertDialog dialog = new AlertDialog.Builder(getContext())
+        if (existingOrder != null) {
+            tvTitle.setText("Edit Laundry Order");
+            etName.setText(existingOrder.getCustomerName());
+            etPhone.setText(existingOrder.getPhoneNumber());
+            etService.setText(existingOrder.getServiceType());
+            etQty.setText(String.valueOf(existingOrder.getQuantity()));
+            etAmount.setText(String.valueOf(existingOrder.getTotalAmount()));
+            btnSave.setText("Update Order");
+
+            ArrayAdapter<CharSequence> adapter = (ArrayAdapter<CharSequence>) spinnerStatus.getAdapter();
+            if (adapter != null) {
+                int pos = adapter.getPosition(existingOrder.getOrderStatus());
+                spinnerStatus.setSelection(pos);
+            }
+        }
+
+        final AlertDialog dialog = new AlertDialog.Builder(getContext())
                 .setView(dialogView)
                 .create();
 
@@ -126,72 +148,72 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
             String service = etService.getText().toString().trim();
             String qtyStr = etQty.getText().toString().trim();
             String amountStr = etAmount.getText().toString().trim();
-            String status = spinnerStatus.getSelectedItem() != null ? spinnerStatus.getSelectedItem().toString() : "Washing";
+            String status = spinnerStatus.getSelectedItem().toString();
 
-            if (!name.isEmpty() && !service.isEmpty() && !qtyStr.isEmpty() && !amountStr.isEmpty()) {
-                int qty = Integer.parseInt(qtyStr);
-                double amount = Double.parseDouble(amountStr);
-                Order order = new Order(0, name, phone, service, qty, amount, status);
-                dbHelper.addOrder(order);
+            // Reset errors
+            tilName.setError(null);
+            tilPhone.setError(null);
+            tilService.setError(null);
+            tilQty.setError(null);
+            tilAmount.setError(null);
+
+            boolean isValid = true;
+
+            if (TextUtils.isEmpty(name)) {
+                tilName.setError("Customer name is required");
+                isValid = false;
+            }
+            if (TextUtils.isEmpty(phone) || !TextUtils.isDigitsOnly(phone)) {
+                tilPhone.setError("Valid phone number is required");
+                isValid = false;
+            }
+            if (TextUtils.isEmpty(service)) {
+                tilService.setError("Service type is required");
+                isValid = false;
+            }
+            
+            int qty = 0;
+            if (TextUtils.isEmpty(qtyStr)) {
+                tilQty.setError("Quantity is required");
+                isValid = false;
+            } else {
+                qty = Integer.parseInt(qtyStr);
+                if (qty <= 0) {
+                    tilQty.setError("Quantity must be positive");
+                    isValid = false;
+                }
+            }
+
+            double amount = 0;
+            if (TextUtils.isEmpty(amountStr)) {
+                tilAmount.setError("Amount is required");
+                isValid = false;
+            } else {
+                amount = Double.parseDouble(amountStr);
+                if (amount <= 0) {
+                    tilAmount.setError("Price must be positive");
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                if (existingOrder == null) {
+                    Order newOrder = new Order(0, name, phone, service, qty, amount, status);
+                    dbHelper.addOrder(newOrder);
+                    Toast.makeText(getContext(), "Order added successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    existingOrder.setCustomerName(name);
+                    existingOrder.setPhoneNumber(phone);
+                    existingOrder.setServiceType(service);
+                    existingOrder.setQuantity(qty);
+                    existingOrder.setTotalAmount(amount);
+                    existingOrder.setOrderStatus(status);
+                    dbHelper.updateOrder(existingOrder);
+                    Toast.makeText(getContext(), "Order updated successfully", Toast.LENGTH_SHORT).show();
+                }
                 loadOrders();
                 dialog.dismiss();
             }
-        });
-
-        dialog.show();
-    }
-
-    private void showUpdateOrderDialog(Order order) {
-        if (getContext() == null) return;
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_order, null);
-        TextView tvTitle = dialogView.findViewById(R.id.tvDialogTitle);
-        EditText etName = dialogView.findViewById(R.id.etCustomerName);
-        EditText etPhone = dialogView.findViewById(R.id.etPhoneNumber);
-        EditText etService = dialogView.findViewById(R.id.etServiceType);
-        EditText etQty = dialogView.findViewById(R.id.etQuantity);
-        EditText etAmount = dialogView.findViewById(R.id.etAmount);
-        Spinner spinnerStatus = dialogView.findViewById(R.id.spinnerStatus);
-        Button btnSave = dialogView.findViewById(R.id.btnSaveOrder);
-
-        if (tvTitle != null) tvTitle.setText(getString(R.string.update_order));
-        etName.setText(order.getCustomerName());
-        etPhone.setText(order.getPhoneNumber());
-        etService.setText(order.getServiceType());
-        etQty.setText(String.valueOf(order.getQuantity()));
-        etAmount.setText(String.valueOf(order.getTotalAmount()));
-        btnSave.setText("Update");
-
-        if (spinnerStatus != null) {
-            @SuppressWarnings("unchecked")
-            ArrayAdapter<CharSequence> arrayAdapter = (ArrayAdapter<CharSequence>) spinnerStatus.getAdapter();
-            if (arrayAdapter != null) {
-                int position = arrayAdapter.getPosition(order.getOrderStatus());
-                spinnerStatus.setSelection(position);
-            }
-        }
-
-        AlertDialog dialog = new AlertDialog.Builder(getContext())
-                .setView(dialogView)
-                .create();
-
-        btnSave.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
-            String phone = etPhone.getText().toString().trim();
-            String service = etService.getText().toString().trim();
-            int qty = Integer.parseInt(etQty.getText().toString().trim());
-            double amount = Double.parseDouble(etAmount.getText().toString().trim());
-            String status = spinnerStatus != null && spinnerStatus.getSelectedItem() != null ? spinnerStatus.getSelectedItem().toString() : order.getOrderStatus();
-
-            order.setCustomerName(name);
-            order.setPhoneNumber(phone);
-            order.setServiceType(service);
-            order.setQuantity(qty);
-            order.setTotalAmount(amount);
-            order.setOrderStatus(status);
-            
-            dbHelper.updateOrder(order);
-            loadOrders();
-            dialog.dismiss();
         });
 
         dialog.show();
